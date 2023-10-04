@@ -1,32 +1,18 @@
-import { useState, useEffect, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import { Title, Grid, Group, Space, Button } from "@mantine/core";
 import { Table } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
-const fetchCategory = async (name = "") => {
-    const response = await axios.get(
-        "http://localhost:4000/categories?" +
-            (name !== "" ? "name=" + name : "")
-    );
+const fetchCategory = async () => {
+    const response = await axios.get("http://localhost:4000/categories");
     return response.data;
 };
 
-export default function Categories() {
-    const navigate = useNavigate();
-    const queryClient = useQueryClient();
-    // const [category, setCategory] = useState([]);
-    const [name, setName] = useState("");
-    const {
-        isLoading,
-        isError,
-        data: categories,
-        error,
-    } = useQuery({
-        queryKey: ["categories", name],
-        queryFn: () => fetchCategory(name),
+export default function Categorys() {
+    const { data: categories } = useQuery({
+        queryKey: ["categories"],
+        queryFn: () => fetchCategory(),
     });
 
     return (

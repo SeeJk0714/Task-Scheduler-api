@@ -1,16 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "axios";
-import {
-    Title,
-    Grid,
-    Card,
-    Badge,
-    Group,
-    Space,
-    Button,
-    LoadingOverlay,
-} from "@mantine/core";
+import { Title, Grid, Group, Space, Button } from "@mantine/core";
 import { Table } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -29,7 +19,6 @@ const deleteTasks = async (task_id = "") => {
 };
 
 export default function Task() {
-    const navigate = useNavigate();
     const queryClient = useQueryClient();
 
     const {
@@ -41,19 +30,6 @@ export default function Task() {
         queryKey: ["tasks"],
         queryFn: () => fetchTasks(),
     });
-
-    const memoryTasks = queryClient.getQueryData(["tasks"]);
-    const priorityOptions = useMemo(() => {
-        let options = [];
-        if (tasks && tasks.length > 0) {
-            tasks.forEach((task) => {
-                if (!options.includes(task.priority)) {
-                    options.push(task.priority);
-                }
-            });
-        }
-        return options;
-    }, [memoryTasks]);
 
     const deleteMutation = useMutation({
         mutationFn: deleteTasks,
@@ -106,7 +82,7 @@ export default function Task() {
                                     <tr key={task._id}>
                                         <td>{task.title}</td>
                                         <td>{task.description}</td>
-                                        <td>{task.dueDate}</td>
+                                        <td>{task.dueDate.split("T")[0]}</td>
                                         <td>{task.status}</td>
                                         <td>{task.priority}</td>
                                         <td>{task.category.name}</td>

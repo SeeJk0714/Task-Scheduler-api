@@ -40,7 +40,7 @@ function TasksEdit() {
     const [status, setStatus] = useState("Pending");
     const [priority, setPriority] = useState("");
     const [category, setCategory] = useState("");
-    const { data } = useQuery({
+    const { isLoading } = useQuery({
         queryKey: ["categories", id],
         queryFn: () => getTask(id),
         onSuccess: (data) => {
@@ -106,6 +106,7 @@ function TasksEdit() {
             </Title>
             <Space h="50px" />
             <Table horizontalSpacing="xl" verticalSpacing="md" fontSize="md">
+                <LoadingOverlay visible={isLoading} />
                 <TextInput
                     value={title}
                     placeholder="Enter the task title here"

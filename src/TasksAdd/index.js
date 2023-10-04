@@ -1,37 +1,30 @@
-import { useState, useMemo } from "react";
-import axios from "axios";
 import {
     Container,
     Title,
     Space,
+    Card,
     TextInput,
     Divider,
     Button,
     Group,
-    LoadingOverlay,
-    Table,
 } from "@mantine/core";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { notifications } from "@mantine/notifications";
+import { useState, useMemo } from "react";
+import axios from "axios";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 
-const getTask = async (id) => {
-    const response = await axios.get("http://localhost:4000/tasks/" + id);
-    return response.data;
-};
-
-const updateTask = async ({ id, data }) => {
+const addTasks = async (data) => {
     const response = await axios({
-        method: "PUT",
-        url: "http://localhost:4000/tasks/" + id,
+        method: "POST",
+        url: "http://localhost:4000/tasks",
         headers: { "Content-Type": "application/json" },
         data: data,
     });
     return response.data;
 };
 
-function TasksEdit() {
-    const { id } = useParams();
+function TasksAdd() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [title, setTitle] = useState("");
@@ -40,20 +33,8 @@ function TasksEdit() {
     const [status, setStatus] = useState("Pending");
     const [priority, setPriority] = useState("");
     const [category, setCategory] = useState("");
-    const { data } = useQuery({
-        queryKey: ["categories", id],
-        queryFn: () => getTask(id),
-        onSuccess: (data) => {
-            setTitle(data.title);
-            setDescription(data.description);
-            setDueDate(data.dueDate);
-            setStatus(data.status);
-            setPriority(data.priority);
-            setCategory(data.category);
-        },
-    });
 
-    const memoryCategories = queryClient.getQueryData(["categories", ""]);
+    const memoryCategories = queryClient.getQueryData(["categories"]);
     const categoryOptions = useMemo(() => {
         let options = [];
         if (memoryCategories && memoryCategories.length > 0) {
@@ -66,13 +47,14 @@ function TasksEdit() {
         return options;
     }, [memoryCategories]);
 
-    const updateMutation = useMutation({
-        mutationFn: updateTask,
+    const createMutation = useMutation({
+        mutationFn: addTasks,
         onSuccess: () => {
             notifications.show({
-                title: "Task Edited",
+                title: "Task Added",
                 color: "green",
             });
+
             navigate("/");
         },
         onError: (error) => {
@@ -83,29 +65,28 @@ function TasksEdit() {
         },
     });
 
-    const handleUpdateTask = async (event) => {
+    const handleAddNewTasks = async (event) => {
         event.preventDefault();
-        updateMutation.mutate({
-            id: id,
-            data: JSON.stringify({
+        createMutation.mutate(
+            JSON.stringify({
                 title: title,
                 description: description,
                 dueDate: dueDate,
                 status: status,
                 priority: priority,
                 category: category,
-            }),
-        });
+            })
+        );
     };
 
     return (
         <Container>
             <Space h="50px" />
-            <Title order={3} align="center">
-                Edit Task
+            <Title order={2} align="center">
+                Add New Task
             </Title>
             <Space h="50px" />
-            <Table horizontalSpacing="xl" verticalSpacing="md" fontSize="md">
+            <Card withBorder shadow="md" p="20px">
                 <TextInput
                     value={title}
                     placeholder="Enter the task title here"
@@ -130,8 +111,8 @@ function TasksEdit() {
                 <Space h="20px" />
                 <TextInput
                     value={dueDate}
-                    placeholder="Enter the task due date here"
-                    label="dueDate"
+                    placeholder="Enter the due date here"
+                    label="Due date"
                     description="The due date of the task"
                     withAsterisk
                     onChange={(event) => setDueDate(event.target.value)}
@@ -140,23 +121,23 @@ function TasksEdit() {
                 <Divider />
                 <Space h="20px" />
                 <TextInput
-                    value={status}
-                    placeholder="Enter the task status here"
-                    label="Status"
-                    description="The status of the task"
+                    value={priority}
+                    placeholder="Enter the priority here"
+                    label="Priority"
+                    description="The priority of the task"
                     withAsterisk
-                    onChange={(event) => setStatus(event.target.value)}
+                    onChange={(event) => setPriority(event.target.value)}
                 />
                 <Space h="20px" />
                 <Divider />
                 <Space h="20px" />
                 <TextInput
-                    value={priority}
-                    placeholder="Enter the task priority here"
-                    label="Priority"
-                    description="The priority of the task"
+                    value={status}
+                    placeholder="Enter the status here"
+                    label="Status"
+                    description="The status of the task"
                     withAsterisk
-                    onChange={(event) => setPriority(event.target.value)}
+                    onChange={(event) => setStatus(event.target.value)}
                 />
                 <Space h="20px" />
                 <Divider />
@@ -169,7 +150,6 @@ function TasksEdit() {
                 >
                     <option value="">All categories</option>
                     {categoryOptions.map((category) => {
-                        console.log(categoryOptions);
                         return (
                             <option key={category._id} value={category._id}>
                                 {category.name}
@@ -177,19 +157,12 @@ function TasksEdit() {
                         );
                     })}
                 </select>
-                {/* <TextInput
-          value={category}
-          placeholder="Enter the task category here"
-          label="Category"
-          description="The category of the task"
-          withAsterisk
-          onChange={(event) => setCategory(event.target.value)}
-        /> */}
                 <Space h="20px" />
-                <Button fullwidth onClick={handleUpdateTask}>
-                    Update
+                <Divider />
+                <Button fullWidth onClick={handleAddNewTasks}>
+                    Add New Tasks
                 </Button>
-            </Table>
+            </Card>
             <Space h="20px" />
             <Group position="center">
                 <Button
@@ -202,9 +175,9 @@ function TasksEdit() {
                     Go back to Home
                 </Button>
             </Group>
-            <Space h="20px" />
+            <Space h="100px" />
         </Container>
     );
 }
 
-export default TasksEdit;
+export default TasksAdd;

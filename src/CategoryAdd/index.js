@@ -9,14 +9,9 @@ import {
     Button,
     Group,
 } from "@mantine/core";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { notifications } from "@mantine/notifications";
 import { useQuery, useMutation } from "@tanstack/react-query";
-
-const getTask = async (id) => {
-    const response = await axios.get("http://localhost:4000/tasks" + id);
-    return response.data;
-};
 
 const addCategory = async (data) => {
     const response = await axios({
@@ -31,23 +26,14 @@ const addCategory = async (data) => {
 };
 
 function CategoryAdd() {
-    const { id } = useParams();
     const navigate = useNavigate();
-    const [task, setTask] = [];
     const [name, setName] = useState("");
-    const { data } = useQuery({
-        queryKey: ["task", id],
-        queryFn: () => getTask(id),
-        onSuccess: (data) => {
-            setTask(data.id);
-        },
-    });
 
     const createMutation = useMutation({
         mutationFn: addCategory,
         onSuccess: () => {
             notifications.show({
-                title: "Shopping Added",
+                title: "Category Added",
                 color: "green",
             });
             navigate("/");
@@ -64,7 +50,6 @@ function CategoryAdd() {
         event.preventDefault();
         createMutation.mutate(
             JSON.stringify({
-                task: task,
                 name: name,
             })
         );
